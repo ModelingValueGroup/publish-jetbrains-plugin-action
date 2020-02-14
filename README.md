@@ -5,7 +5,7 @@ upload a plugin to the JetBrains marketplace
 
 When gave can be taken from pom.xml:
 ```yaml
-      - name: "Upload as package"
+      - name: "Upload plugin to JetBrains"
         uses: ModelingValueGroup/upload-jetbrains-plugin-action@master
         with:
           file    : "my-plugin.zip"

@@ -33,8 +33,8 @@ if [[ "$INPUT_PLUGINID" == "" ]]; then
     echo "::error::pluginId can not be empty, do a manual upload first at https://plugins.jetbrains.com/plugin/add"
     exit 86
 fi
-if [[ ! "$INPUT_FILE" == *.zip ]]; then
-    echo "::error::plugins should be packaged in zip files"
+if [[ ! "$INPUT_FILE" == *.zip && ! "$INPUT_FILE" == *.jar ]]; then
+    echo "::error::plugins should be packaged in zip or jar files"
     exit 87
 fi
 
@@ -49,12 +49,15 @@ if [[ "$INPUT_CHANNEL" == "" ]]; then
     fi
 fi
 if [[ "$INPUT_CHANNEL" != "" ]]; then
-    curl -i \
+    curl \
+        -v \
+        -i \
         --header "Authorization: Bearer $INPUT_HUBTOKEN" \
         -F "pluginId=$INPUT_PLUGINID" \
         -F  "channel=$INPUT_CHANNEL" \
-        -F     "file=$INPUT_FILE" \
-        https://plugins.jetbrains.com/plugin/uploadPlugin
+        -F     "file=@$INPUT_FILE" \
+        "https://plugins.jetbrains.com/plugin/uploadPlugin"
 
+    echo
     echo "::info::find your updated plugin at https://plugins.jetbrains.com/plugin/$INPUT_PLUGINID"
 fi
