@@ -36,5 +36,47 @@ inputs:
     default: "false"
 
 runs:
-  using: 'node12'
-  main : 'entrypoint.js'
+  using: 'composite'
+  steps:
+    - shell: bash
+      id: main
+      run: |
+        set -euo pipefail
+        [[ "${{inputs.trace}}" == "true" ]] && set -x
+
+        if [[ "${{inputs.hubToken}}" == "" ]]; then
+          echo "::error::hubToken can not be empty, create a token at https://hub.jetbrains.com"
+          exit 85
+        fi
+        if [[ "${{inputs.pluginId}}" == "" ]]; then
+          echo "::error::pluginId can not be empty, do a manual upload first at https://plugins.jetbrains.com/plugin/add"
+          exit 86
+        fi
+        if [[ ! "${{inputs.file}}" == *.zip && ! "${{inputs.file}}" == *.jar ]]; then
+          echo "::error::plugins should be packaged in zip or jar files"
+          exit 87
+        fi
+
+        if [[ "${{inputs.channel}}" == "" ]]; then
+          branch="${GITHUB_REF#refs/heads/}"
+          if [[ "$branch" == "master" ]]; then
+            {{inputs.channel}}="stable"
+          elif [[ "$branch" == "develop" ]]; then
+            {{inputs.channel}}="eap"
+          else
+            echo "::info::skipping publish of jetbrains plugin because branch ($branch) is not master or develop"
+          fi
+        fi
+        if [[ "${{inputs.channel}}" != "" ]]; then
+          curl \
+          -v \
+          -i \
+          --header "Authorization: Bearer ${{inputs.hubToken}}" \
+          -F "pluginId=${{inputs.pluginId}}" \
+          -F  "channel=${{inputs.channel}}" \
+          -F     "file=@${{inputs.file}}" \
+          "https://plugins.jetbrains.com/plugin/uploadPlugin"
+      
+          echo
+          echo "::info::find your updated plugin at https://plugins.jetbrains.com/plugin/${{inputs.pluginId}}"
+        fi
