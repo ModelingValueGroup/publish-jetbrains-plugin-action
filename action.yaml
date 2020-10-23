@@ -57,25 +57,28 @@ runs:
           exit 87
         fi
 
-        if [[ "${{inputs.channel}}" == "" ]]; then
+        channel="${{inputs.channel}}"
+        if [[ "$channel" == "" ]]; then
           branch="${GITHUB_REF#refs/heads/}"
           if [[ "$branch" == "master" ]]; then
-            {{inputs.channel}}="stable"
+            channel="stable"
           elif [[ "$branch" == "develop" ]]; then
-            {{inputs.channel}}="eap"
+            channel="eap"
           else
             echo "::info::skipping publish of jetbrains plugin because branch ($branch) is not master or develop"
           fi
         fi
-        if [[ "${{inputs.channel}}" != "" ]]; then
+
+        if [[ "$channel" != "" ]]; then
+          echo "::info::publishing plugin ${{inputs.pluginId}} on $channel channel"
           curl \
-          -v \
-          -i \
-          --header "Authorization: Bearer ${{inputs.hubToken}}" \
-          -F "pluginId=${{inputs.pluginId}}" \
-          -F  "channel=${{inputs.channel}}" \
-          -F     "file=@${{inputs.file}}" \
-          "https://plugins.jetbrains.com/plugin/uploadPlugin"
+            -v \
+            -i \
+            --header "Authorization: Bearer ${{inputs.hubToken}}" \
+            -F "pluginId=${{inputs.pluginId}}" \
+            -F  "channel=$channel" \
+            -F     "file=@${{inputs.file}}" \
+            "https://plugins.jetbrains.com/plugin/uploadPlugin"
       
           echo
           echo "::info::find your updated plugin at https://plugins.jetbrains.com/plugin/${{inputs.pluginId}}"
