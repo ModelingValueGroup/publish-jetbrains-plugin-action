@@ -9,7 +9,7 @@ When gave can be taken from pom.xml:
         uses: ModelingValueGroup/upload-jetbrains-plugin-action@master
         with:
           file    : "my-plugin.zip"
-          hubToken: "${{ secrets.HUB_TOKEN }}"
+          hubToken: "${{secrets.HUB_TOKEN}}"
           pluginId: "123456789"
           channel : "eap"
 ```
